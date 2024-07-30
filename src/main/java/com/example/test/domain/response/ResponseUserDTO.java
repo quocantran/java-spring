@@ -1,5 +1,7 @@
 package com.example.test.domain.response;
 
+import com.example.test.domain.Role;
+import com.example.test.domain.Role.ResponseRoleDTO;
 import com.example.test.domain.Company.ResponseCompanyDTO;
 
 public class ResponseUserDTO {
@@ -7,6 +9,7 @@ public class ResponseUserDTO {
     private String email;
     private String avatar;
     private ResponseCompanyDTO company;
+    private ResponseRoleDTO role;
 
     public String getName() {
         return name;
@@ -16,6 +19,14 @@ public class ResponseUserDTO {
         this.name = name;
         this.email = email;
         this.avatar = avatar;
+    }
+
+    public ResponseRoleDTO getRole() {
+        return role;
+    }
+
+    public void setRole(ResponseRoleDTO role) {
+        this.role = role;
     }
 
     public ResponseUserDTO() {

@@ -22,7 +22,11 @@ import org.springframework.stereotype.Service;
 
 import com.example.test.domain.User;
 import com.example.test.domain.request.RequestLoginDTO;
+import com.example.test.domain.response.ResponseUserDTO;
 import com.nimbusds.jose.util.Base64;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 @Service
 public class JwtService {
@@ -42,6 +46,8 @@ public class JwtService {
     private String jwtRefreshSecretKey;
 
     private final ArrayList<String> roles = new ArrayList<String>();
+
+    private static final Gson gson = new GsonBuilder().create();
 
     public static final MacAlgorithm MAC_ALGORITHM = MacAlgorithm.HS256;
 
@@ -70,11 +76,17 @@ public class JwtService {
         Instant validity = now.plus(this.jwtAccessExpiration, ChronoUnit.SECONDS);
         this.roles.add("ROLE_USER_CREATE");
         this.roles.add("ROLE_USER_READ");
+
+        ResponseUserDTO userDto = new ResponseUserDTO();
+        userDto.setName(user.getName());
+        userDto.setEmail(user.getEmail());
+        userDto.setCompany(user.getCompany().convertCompanyDto());
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
                 .subject(email)
-                .claim("user", user.convertUserDto())
+                .claim("user", userDto)
                 .claim("permission", roles)
                 .build();
 

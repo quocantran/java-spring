@@ -49,4 +49,14 @@ public class SkillController {
         return new ResponseEntity<Skill>(entity, HttpStatus.CREATED);
     }
 
+    @PostMapping("/update")
+    public ResponseEntity<Skill> update(@Valid @RequestBody Skill entity) throws BadRequestException {
+        Skill skill = this.skillService.findSkillById(entity.getId());
+        if (skill == null) {
+            throw new BadRequestException("Skill not found");
+        }
+        Skill updatedSkill = this.skillService.update(entity);
+        return new ResponseEntity<Skill>(updatedSkill, HttpStatus.OK);
+    }
+
 }

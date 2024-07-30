@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 
 import com.example.test.domain.Company;
 import com.example.test.domain.Job;
+import com.example.test.domain.Skill;
+import java.util.List;
 
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificationExecutor<Job> {
@@ -25,5 +27,7 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
     Boolean existsByCompany(Company company);
 
     Boolean existsByNameAndCompany(String name, Company company);
+
+    List<Job> findBySkillsIn(List<Skill> skills);
 
 }

@@ -2,16 +2,15 @@ package com.example.test.domain;
 
 import java.time.Instant;
 
-import org.springframework.security.core.context.SecurityContextHolder;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -19,46 +18,41 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import jakarta.persistence.JoinColumn;
+
 @Entity
-@Table(name = "companies")
-public class Company {
+@Table(name = "roles")
+public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
-    private long id;
+    private Long id;
 
     @NotBlank(message = "Name is required")
     private String name;
-    private String address, logo;
-    @Column(columnDefinition = "MEDIUMTEXT")
+
     @NotBlank(message = "Description is required")
     private String description;
+    private boolean active;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
-    private Instant createdAt, updateAt;
+    private Instant createdAt, updatedAt;
     private String createdBy, updatedBy;
 
-    @jakarta.persistence.OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    @JsonIgnore
+    @OneToMany(mappedBy = "role")
+    @JsonIgnoreProperties("role")
     private List<User> users;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Job> jobs;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = "roles")
+    @JoinTable(name = "permissions_roles", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    private List<Permission> permissions;
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public List<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<User> users) {
-        this.users = users;
-    }
-
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -70,28 +64,20 @@ public class Company {
         this.name = name;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getLogo() {
-        return logo;
-    }
-
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Instant getCreatedAt() {
@@ -102,12 +88,12 @@ public class Company {
         this.createdAt = createdAt;
     }
 
-    public Instant getUpdateAt() {
-        return updateAt;
+    public Instant getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdateAt(Instant updateAt) {
-        this.updateAt = updateAt;
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public String getCreatedBy() {
@@ -126,23 +112,40 @@ public class Company {
         this.updatedBy = updatedBy;
     }
 
+    public List<Permission> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<Permission> permissions) {
+        this.permissions = permissions;
+    }
+
     @PrePersist
     public void onCreate() {
         this.createdAt = Instant.now();
         this.createdBy = SecurityContextHolder.getContext().getAuthentication().getName();
-        this.updateAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.updatedBy = SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
     @PreUpdate
     public void onUpdate() {
-        this.updateAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.updatedBy = SecurityContextHolder.getContext().getAuthentication().getName();
     }
 
-    public static class ResponseCompanyDTO {
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<User> users) {
+        this.users = users;
+    }
+
+    public static class ResponseRoleDTO {
         private long id;
         private String name;
+        private List<Permission> permissions;
 
         public long getId() {
             return id;
@@ -160,13 +163,22 @@ public class Company {
             this.name = name;
         }
 
+        public List<Permission> getPermissions() {
+            return permissions;
+        }
+
+        public void setPermissions(List<Permission> permissions) {
+            this.permissions = permissions;
+        }
+
     }
 
-    public ResponseCompanyDTO convertCompanyDto() {
-        ResponseCompanyDTO responseCompanyDTO = new ResponseCompanyDTO();
-        responseCompanyDTO.setId(this.id);
-        responseCompanyDTO.setName(this.name);
-        return responseCompanyDTO;
+    public ResponseRoleDTO convertRoleDto() {
+        ResponseRoleDTO responseRoleDTO = new ResponseRoleDTO();
+        responseRoleDTO.setId(this.id);
+        responseRoleDTO.setName(this.name);
+        responseRoleDTO.setPermissions(this.permissions);
+        return responseRoleDTO;
     }
 
 }

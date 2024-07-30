@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.example.test.core.error.BadRequestException;
+import com.example.test.core.error.ForbiddenException;
 import com.example.test.core.error.UnauthorizeException;
 
 import java.util.List;
@@ -32,14 +33,31 @@ public class GlobalException {
             BadRequestException.class,
             UsernameNotFoundException.class,
             UnauthorizeException.class,
-            BadCredentialsException.class
+            BadCredentialsException.class,
+            ForbiddenException.class
     })
-    public ResponseEntity<Response<Object>> handleBadRequestException(Exception e) {
+    public ResponseEntity<Response<Object>> handleAllException(Exception e) {
         Response<Object> response = new Response<>();
         response.setMessage("error");
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setStatus(getStatusFromException(e).value());
         response.setError(e.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, getStatusFromException(e));
+    }
+
+    private HttpStatus getStatusFromException(Exception e) {
+        if (e instanceof BadRequestException) {
+            return HttpStatus.BAD_REQUEST;
+        } else if (e instanceof UsernameNotFoundException) {
+            return HttpStatus.NOT_FOUND;
+        } else if (e instanceof UnauthorizeException) {
+            return HttpStatus.UNAUTHORIZED;
+        } else if (e instanceof BadCredentialsException) {
+            return HttpStatus.UNAUTHORIZED;
+        } else if (e instanceof ForbiddenException) {
+            return HttpStatus.FORBIDDEN;
+        } else {
+            return HttpStatus.INTERNAL_SERVER_ERROR; // Default status if exception type is unknown
+        }
     }
 
     @ExceptionHandler(value = { MethodArgumentNotValidException.class })
@@ -65,4 +83,5 @@ public class GlobalException {
         response.setStatus(HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
 }

@@ -31,6 +31,7 @@ public class User {
     private long id;
     @NotBlank(message = "Name is required")
     private String name;
+
     @NotBlank(message = "Email is required")
     private String email;
     @NotBlank(message = "Password is required")
@@ -52,8 +53,11 @@ public class User {
 
     @ManyToOne(targetEntity = Company.class)
     @JoinColumn(name = "company_id")
-
     private Company company;
+
+    @ManyToOne(targetEntity = Role.class)
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     public long getId() {
         return id;
@@ -85,6 +89,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public String getAvatar() {
@@ -187,6 +199,7 @@ public class User {
         userDTO.setEmail(this.getEmail());
         userDTO.setAvatar(this.getAvatar());
         userDTO.setCompany(company != null ? company.convertCompanyDto() : null);
+        userDTO.setRole(role != null ? role.convertRoleDto() : null);
         return userDTO;
     }
 }

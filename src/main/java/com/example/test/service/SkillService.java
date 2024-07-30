@@ -53,4 +53,15 @@ public class SkillService {
         return this.skillRepository.findByIdIn(skill);
     }
 
+    public Skill findSkillById(Long id) {
+        return this.skillRepository.findById(id).orElse(null);
+    }
+
+    public Skill update(Skill skill) {
+        Skill res = this.findSkillById(skill.getId());
+        res.setName(skill.getName());
+        return this.skillRepository.save(res);
+
+    }
+
 }

@@ -28,7 +28,7 @@ public class FormatResponse implements ResponseBodyAdvice<Object> {
                 .getServletResponse();
         int status = servletResponse.getStatus();
         Response<Object> responseObj = new Response<Object>();
-        if (status >= 400) {
+        if (status >= 400 || body instanceof String) {
             return body;
         } else {
             responseObj.setMessage("success");

@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.example.test.domain.response.ResponseEmailJob;
 import com.example.test.utils.constant.LevelEnum;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -25,6 +26,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "jobs")
@@ -220,6 +222,21 @@ public class Job {
     public void onUpdate() {
         this.updatedAt = Instant.now();
         this.updatedBy = SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    public ResponseEmailJob convertJobToResponseEmailJob(Job job) {
+        ResponseEmailJob responseEmailJob = new ResponseEmailJob();
+        responseEmailJob.setName(job.getName());
+        responseEmailJob.setSalary(job.getSalary());
+        responseEmailJob.setCompany(new ResponseEmailJob.CompanyEmail(job.getCompany().getName()));
+        List<Skill> skills = job.getSkills();
+        List<ResponseEmailJob.SkillEmail> skillEmails = skills.stream().map(skill -> {
+            ResponseEmailJob.SkillEmail skillEmail = new ResponseEmailJob.SkillEmail();
+            skillEmail.setName(skill.getName());
+            return skillEmail;
+        }).collect(Collectors.toList());
+        responseEmailJob.setSkills(skillEmails);
+        return responseEmailJob;
     }
 
 }

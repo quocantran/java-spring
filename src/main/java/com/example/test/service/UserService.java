@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.test.core.error.BadRequestException;
 import com.example.test.domain.Company;
+import com.example.test.domain.Role;
 import com.example.test.domain.User;
 import com.example.test.domain.response.ResponseMetaDTO;
 import com.example.test.domain.response.ResponsePaginationDTO;
@@ -19,12 +20,14 @@ public class UserService {
     private UserRepository userRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private CompanyService companyService;
+    private final RoleService roleService;
 
     public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder,
-            CompanyService companyService) {
+            CompanyService companyService, RoleService roleService) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.companyService = companyService;
+        this.roleService = roleService;
     }
 
     public ResponseUserDTO createUser(User user) throws BadRequestException {
@@ -35,9 +38,13 @@ public class UserService {
 
         Company company = this.companyService.getCompanyById(user.getCompany().getId());
 
+        Role role = this.roleService.getRoleById(user.getRole().getId());
+
         if (company == null) {
             throw new BadRequestException("Company not found");
         }
+
+        user.setRole(role != null ? role : null);
 
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         User res = this.userRepository.save(user);
